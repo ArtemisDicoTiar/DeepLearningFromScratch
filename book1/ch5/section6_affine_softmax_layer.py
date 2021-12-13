@@ -5,6 +5,7 @@ from book1.ch3.section5_output_layer import softmax_enh
 
 class Affine:
     def __init__(self, W, b):
+        self.original_x_shape = None
         self.W = W
         self.b = b
 
@@ -14,6 +15,9 @@ class Affine:
         self.db = None
 
     def forward(self, x):
+        # 텐서 대응
+        self.original_x_shape = x.shape
+        x = x.reshape(x.shape[0], -1)
         self.x = x
         return np.dot(x, self.W) + self.b
 
@@ -23,6 +27,7 @@ class Affine:
         self.dW = np.dot(self.x.T, d_out)
         self.db = np.sum(d_out, axis=0)  # d_out shape -> B.shape
 
+        dx = dx.reshape(*self.original_x_shape)  # 입력 데이터 모양 변경(텐서 대응)
         return dx
 
 
