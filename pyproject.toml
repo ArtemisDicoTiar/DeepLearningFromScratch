@@ -6,6 +6,10 @@ authors = ["John JongYoon Kim <mw18074@bristol.ac.uk>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
+pip = "^21.3.1"
+torch = "^1.10.1"
+torchvision = "^0.11.2"
+keras = "^2.7.0"
 
 [tool.poetry.dev-dependencies]
 
