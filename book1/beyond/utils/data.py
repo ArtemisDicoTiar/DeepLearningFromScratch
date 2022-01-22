@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from typing import Union
 
 import numpy as np
+from torch.utils.data import DataLoader
 
 
 @dataclass
@@ -11,8 +13,8 @@ class DataSet:
 
 @dataclass
 class Data:
-    train: DataSet = None
-    test: DataSet = None
+    train: Union[DataSet, DataLoader] = None
+    test: Union[DataSet, DataLoader] = None
 
 
 if __name__ == '__main__':

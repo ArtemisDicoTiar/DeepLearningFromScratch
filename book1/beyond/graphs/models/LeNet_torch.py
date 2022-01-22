@@ -35,7 +35,7 @@ class LeNet1Torch(Module):
             F.relu(self.layers.conv2(x)),
             kernel_size=(2, 2)
         )
-        x = torch.flatten(x)  # fc 연결을 위해 (i, j, k)를 (i*j*k, 1)로 flatten
+        x = torch.flatten(x, start_dim=1)  # fc 연결을 위해 (i, j, k)를 (i, j*k, 1)로 flatten
         x = self.layers.fc(x)  # fc 레이어 연결
 
         return x

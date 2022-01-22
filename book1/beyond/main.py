@@ -1,56 +1,73 @@
+import numpy as np
 import torch
 from torch import nn
 import torch.optim as optim
+from torch.nn import Module
 
 from book1.beyond.datasets.dataLoader import get_mnist_handwritten
 from book1.beyond.graphs.models.LeNet_torch import LeNet1Torch, LeNet4Torch, LeNet5Torch
 
 
 class BaseTrainer:
-    def __init__(self):
+    def __init__(self,
+                 which: str,
+                 RANDOM_SEED: int = 42,
+                 LEARNING_RATE: float = 0.01,
+                 BATCH_SIZE: int = 100,
+                 N_EPOCHS: int = 20,
+                 IMG_SIZE: int = 32,
+                 N_CLASSES: int = 10,
+                 ):
         self.models = {
             'LeNet1_torch': LeNet1Torch(),
             'LeNet4_torch': LeNet4Torch(),
             'LeNet5_torch': LeNet5Torch(),
         }
-        self.data = get_mnist_handwritten(as_data=True)
+        self.model = self.models[which]
+        self.data = get_mnist_handwritten(as_dataloader=True)
 
-    def get_net(self, model):
+        self.mini_batch_size = self.batch_size = BATCH_SIZE
+        self.epochs = N_EPOCHS
+
+        self.loss_fn = nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=LEARNING_RATE)
+        self.learning_rate = LEARNING_RATE
+
+        self.train_loss_list = []
+        self.train_acc_list = []
+        self.test_acc_list = []
+
+    def get_net(self):
         print("# Net")
-        print(self.models[model])
+        print(self.model)
 
         print("# Params")
-        for param in self.models[model].parameters():
+        for param in self.model.parameters():
             print(param.size())
 
-    def train(self, model: str):
+    def train_step(self, x_batch, y_batch, batch_idx, total):
+        # Compute prediction and loss
+        pred = self.model(x_batch)
+        loss = self.loss_fn(pred, y_batch)
 
-        cur_model = self.models[model].train()
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(cur_model.parameters(), lr=0.001, momentum=0.9)
+        # Backpropagation
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
-        for epoch in range(2):  # loop over the dataset multiple times
+        if batch_idx % 10 == 0:
+            loss, current = loss.item(), batch_idx * len(x_batch)
+            print(f"loss: {loss:>7f}  [{current:>5d}/{total:>5d}]")
 
-            running_loss = 0.0
-            for i, data in enumerate(trainloader, 0):
-                # get the inputs; data is a list of [inputs, labels]
-                inputs, labels = data
+    def train_loop(self):
+        total = len(self.data.train.dataset)
 
-                # zero the parameter gradients
-                optimizer.zero_grad()
+        for batch, (X, y) in enumerate(self.data.train):
+            self.train_step(X, y, batch, total)
 
-                # forward + backward + optimize
-                outputs = cur_model(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-
-                # print statistics
-                running_loss += loss.item()
-                if i % 2000 == 1999:  # print every 2000 mini-batches
-                    print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 2000))
-                    running_loss = 0.0
+    def train(self):
+        for _ in range(self.epochs):
+            self.train_loop()
 
         print('Finished Training')
 
@@ -75,10 +92,19 @@ if __name__ == '__main__':
     N_CLASSES = 10
 
     # ========== Run Setting ========== #
-    target_mode = "get_net"
+    target_mode = "train"
     target_model = "LeNet1_torch"
 
     # ================================= #
 
-    base_trainer = BaseTrainer()
-    getattr(base_trainer, target_mode)(target_model)
+    base_trainer = BaseTrainer(
+        which=target_model,
+        RANDOM_SEED=42,
+        LEARNING_RATE=0.001,
+        BATCH_SIZE=32,
+        N_EPOCHS=15,
+        IMG_SIZE=32,
+        N_CLASSES=10,
+    )
+    base_trainer.get_net()
+    base_trainer.train()
