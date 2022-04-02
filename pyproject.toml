@@ -5,7 +5,8 @@ description = ""
 authors = ["John JongYoon Kim <mw18074@bristol.ac.uk>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8.13"
+numpy = "^1.22.3"
 
 [tool.poetry.dev-dependencies]
 

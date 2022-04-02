@@ -37,8 +37,67 @@ eg. 위와 동일한 문장으로 say의 벡터는
 """
 import numpy as np
 
+from book2.ch2.section3_1_preprocess_corpus import preprocess
+
+
+def create_co_matrix(corpus, vocab_size, window_size=1):
+    corpus_size = len(corpus)
+    co_matrix = np.zeros((vocab_size, vocab_size), dtype=np.int32)
+
+    for idx, word_id in enumerate(corpus):
+        for i in range(1, window_size + 1):
+            left_idx = idx - 1
+            right_idx = idx + 1
+
+            if left_idx >= 0:
+                left_word_id = corpus[left_idx]
+                co_matrix[word_id, left_word_id] += 1
+
+            if right_idx < corpus_size:
+                right_word_id = corpus[right_idx]
+                co_matrix[word_id, right_word_id] += 1
+
+    return co_matrix
+
 
 def cos_sim(x, y, eps=1e-8):
     nx = x / np.sqrt(np.sum(x ** 2) + eps)
     ny = y / np.sqrt(np.sum(y ** 2) + eps)
     return np.dot(nx, ny)
+
+
+def most_similar(query, word2id, id2word, word_matrix, top=5):
+    if query not in word2id:
+        raise ValueError(f"Cannot find ${query}.")
+
+    query_id = word2id[query]
+    query_vec = word_matrix[query_id]
+
+    vocab_size = len(id2word)
+    similarity = np.zeros(vocab_size)
+
+    for i in range(vocab_size):
+        similarity[i] = cos_sim(word_matrix[i], query_vec)
+
+    for idx, sim_idx in enumerate(similarity.argsort()[::-1]):
+        if idx >= top:
+            break
+
+        word = id2word[sim_idx]
+        if word == query:
+            continue
+
+        print(f"{query} <--> {word} => {similarity[sim_idx]}")
+
+
+if __name__ == '__main__':
+    text = "You say goodbye and I say hello."
+    corpus, word2id, id2word = preprocess(text)
+    vocab_size = len(word2id)
+    C = create_co_matrix(corpus, vocab_size)
+
+    c0 = C[word2id['you']]
+    c1 = C[word2id['i']]
+
+    print(cos_sim(c0, c1))
+    most_similar("you", word2id, id2word, C, top=5)
