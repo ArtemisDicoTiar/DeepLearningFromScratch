@@ -68,7 +68,7 @@ def cos_sim(x, y, eps=1e-8):
 
 def most_similar(query, word2id, id2word, word_matrix, top=5):
     if query not in word2id:
-        raise ValueError(f"Cannot find ${query}.")
+        raise ValueError(f"Cannot find {query}.")
 
     query_id = word2id[query]
     query_vec = word_matrix[query_id]

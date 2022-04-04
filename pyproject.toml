@@ -7,6 +7,8 @@ authors = ["John JongYoon Kim <mw18074@bristol.ac.uk>"]
 [tool.poetry.dependencies]
 python = "^3.8.13"
 numpy = "^1.22.3"
+matplotlib = "^3.5.1"
+scikit-learn = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 
