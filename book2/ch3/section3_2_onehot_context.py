@@ -10,7 +10,7 @@ def convert2onehot(ary: np.array, max_id: int) -> np.array:
     array([[False,  True, False, False, False, False, False],
            [False, False, False,  True, False, False, False]])
     """
-    return (np.arange(max_id + 1) == ary[..., None]).astype(int)
+    return (np.arange(max_id) == ary[..., None]).astype(int)
 
 
 if __name__ == '__main__':
