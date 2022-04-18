@@ -13,6 +13,16 @@ class SimpleCBOW:
         V, H = vocab_size, hidden_size
 
         # weights init
+        # 왜 0.01을 곱해줬지?
+        # random.randn 은 정규분포를 따른다. (X ~ N(0, 1))
+        # sigma * randn + mu = N(mu, sigma^2)
+        # https://numpy.org/doc/stable/reference/random/generated/numpy.random.randn.html
+        # 이러면 전체 범위가 0 ~ 40이 된다.
+        # 어쩌면 np에서의 설명이 잘 못 된거 일지도...?
+        # 그냥 X~N(0,1) 의 값에 0.01 곱해서 줄여놓았다고 봐야할듯.
+        # 그래서 왜? 곱한 건데?
+        # imageNet 논문에서 N(0,1) 노이즈를 썼더니 좋더라 그래서 인듯
+        # https://proceedings.neurips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf
         W_in = 0.01 * np.random.randn(V, H).astype(float)
         W_out = 0.01 * np.random.randn(H, V).astype(float)
 

@@ -2,8 +2,7 @@ import collections
 
 import numpy as np
 
-from book2.ch4.section2_4_multi_class2_binary_class import EmbeddingDot
-from book2.utils.layers import SigmoidWithLoss
+from book2.utils.layers import SigmoidWithLoss, Embedding
 
 GPU = False
 
@@ -25,6 +24,30 @@ def np_random():
     # 확률 기반으로 선택
     p = [0.5, 0.1, 0.05, 0.2, 0.05, 0.1]
     print(np.random.choice(words, p=p))
+
+
+class EmbeddingDot:
+    def __init__(self, W):
+        self.embed = Embedding(W)
+        self.params = self.embed.params
+        self.grads = self.embed.grads
+        self.cache = None
+
+    def forward(self, h, idx):
+        target_W = self.embed.forward(idx)
+        out = np.sum(target_W * h, axis=1)
+
+        self.cache = (h, target_W)
+        return out
+
+    def backward(self, dout):
+        h, target_W = self.cache
+        dout = dout.reshape(dout.shape[0], 1)
+
+        dtarget_W = dout * h
+        self.embed.backward(dtarget_W)
+        dh = dout * target_W
+        return dh
 
 
 class UnigramSampler:
@@ -90,8 +113,8 @@ class NegativeSamplingLoss:
         loss = self.loss_layer[0].forward(score, correct_label)
 
         # negative
-        for idx in range(1, sample_size+1):
-            negative_target = negative_sample[:, idx-1]
+        for idx in range(1, self.sample_size + 1):
+            negative_target = negative_sample[:, idx - 1]
             score = self.embed_dot_layers[idx].forward(h, negative_target)
             negative_label = np.zeros(batch_size, dtype=np.int32)
             loss += self.loss_layer[idx].forward(score, negative_label)
@@ -105,7 +128,6 @@ class NegativeSamplingLoss:
             dh += embed_layer.backward(dscore)
 
         return dh
-
 
 
 if __name__ == '__main__':
